@@ -1,5 +1,5 @@
 {
-  "name": "novaweb-vue",
+  "name": "frontend",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,15 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.4",
-    "axios": "^1.9.0",
-    "tailwindcss": "^4.1.4",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.4"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.3",
-    "vite": "^6.2.4",
-    "vite-plugin-vue-devtools": "^7.7.2"
+    "@vitejs/plugin-vue": "^4.2.3",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.3",
+    "vite": "^4.4.5"
   }
-}
+} 

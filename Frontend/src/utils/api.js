@@ -1,5 +1,4 @@
-// URL base del API - asegurarse de que termine con /api
-const API_URL = 'backenddcw-production.up.railway.app/api'
+const API_URL = '//backenddcw-production.up.railway.app/api'
 
 // Función auxiliar para hacer peticiones
 async function fetchAPI(endpoint, options = {}) {
@@ -55,5 +54,4 @@ export async function register(nombre, email, password, rol = 'cliente', token =
 // 🔵 Obtener lista de servicios
 export async function getServicios() {
   return fetchAPI('/servicios')
-}
-
+} 
