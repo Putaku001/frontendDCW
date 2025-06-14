@@ -25,10 +25,11 @@ const fetchCartData = async () => {
       cartState.loading = false
       return
     }
-    const response = await fetch('http://localhost:5000/api/carrito', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/carrito`, {
       headers: {
         'Authorization': `Bearer ${token}`
-      }
+      },
+      credentials: 'include'
     })
     if (!response.ok) throw new Error('Error al obtener el carrito')
     const data = await response.json()

@@ -27,10 +27,11 @@ const displayName = computed(() =>
 onMounted(async () => {
   try {
     const token = obtenerToken()
-    const response = await fetch('http://localhost:5000/api/auth/me', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/auth/me`, {
       headers: {
         'Authorization': `Bearer ${token}`
-      }
+      },
+      credentials: 'include'
     })
 
     if (!response.ok) {

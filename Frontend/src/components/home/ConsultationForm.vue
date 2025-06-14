@@ -66,11 +66,12 @@ const enviarFormulario = async () => {
   error.value = ''
 
   try {
-    const response = await fetch('http://localhost:5000/api/consultas', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/consultas`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify({
         nombre: nombre.value,
         email: email.value,

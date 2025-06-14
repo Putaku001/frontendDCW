@@ -1,10 +1,11 @@
-const API_URL = 'http://localhost:5000/api' // LOCAL, asegurado
+const API_URL = import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'
 
 // 🟢 Login de usuario
 export async function login(email, password) {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ email, password })
   })
   return await res.json()
@@ -23,6 +24,7 @@ export async function register(nombre, email, password, rol = 'cliente', token =
   const res = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers,
+    credentials: 'include',
     body: JSON.stringify({ nombre, email, password, rol })
   })
 
@@ -31,6 +33,8 @@ export async function register(nombre, email, password, rol = 'cliente', token =
 
 // 🔵 Obtener lista de servicios (sin autenticación)
 export async function getServicios() {
-  const res = await fetch(`${API_URL}/productos`)
+  const res = await fetch(`${API_URL}/productos`, {
+    credentials: 'include'
+  })
   return await res.json()
 }
