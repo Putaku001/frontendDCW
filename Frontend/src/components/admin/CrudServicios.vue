@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { obtenerToken } from '@/utils/auth'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'
+
 const props = defineProps({
   refetch: { type: Number, default: 0 }
 })
@@ -38,10 +40,15 @@ const serviciosPaginados = computed(() => {
 })
 const totalPaginas = computed(() => Math.ceil(servicios.value.length / porPagina))
 
+// Función para obtener la URL completa de la imagen del servicio
+const getServiceImageUrl = (imagePath) => {
+  return `${API_BASE_URL}${imagePath}`
+}
+
 const fetchServices = async () => {
   try {
     const token = obtenerToken()
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/servicios`, {
+    const response = await fetch(`${API_BASE_URL}/api/servicios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     if (!response.ok) throw new Error('Error al obtener servicios')
@@ -80,7 +87,7 @@ const createService = async () => {
     formData.append('imagen', nuevoServicio.value.imagen)
 
     const token = obtenerToken()
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/servicios`, {
+    const response = await fetch(`${API_BASE_URL}/api/servicios`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: formData
@@ -114,7 +121,7 @@ const updateService = async (servicio) => {
     }
 
     const token = obtenerToken()
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/servicios/${servicio._id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/servicios/${servicio._id}`, {
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${token}` },
       body: formData
@@ -136,7 +143,7 @@ const deleteService = async (id) => {
 
   try {
     const token = obtenerToken()
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/servicios/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/servicios/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -213,7 +220,7 @@ onMounted(fetchServices)
 
             <!-- Modo normal -->
             <template v-else>
-              <td class="p-2"><img :src="`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'}${servicio.imagen}`" class="w-16 h-16 object-cover rounded" /></td>
+              <td class="p-2"><img :src="getServiceImageUrl(servicio.imagen)" class="w-16 h-16 object-cover rounded" /></td>
               <td class="p-2">{{ servicio.nombre }}</td>
               <td class="p-2">{{ servicio.descripcion }}</td>
               <td class="p-2">${{ servicio.costo }}</td>
