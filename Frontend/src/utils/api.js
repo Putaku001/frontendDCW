@@ -1,36 +1,59 @@
-const API_URL = 'http://localhost:5000/api' // LOCAL, asegurado
+// URL base del API - asegurarse de que termine con /api
+const API_URL = 'backenddcw-production.up.railway.app/api'
+
+// Función auxiliar para hacer peticiones
+async function fetchAPI(endpoint, options = {}) {
+  const url = `${API_URL}${endpoint}`
+  console.log('🌐 Haciendo petición a:', url)
+  
+  const defaultOptions = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    credentials: 'include'
+  }
+
+  try {
+    const res = await fetch(url, { ...defaultOptions, ...options })
+    console.log('📡 Respuesta del servidor:', res.status, res.statusText)
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}))
+      throw new Error(errorData.message || `Error ${res.status}: ${res.statusText}`)
+    }
+    
+    return await res.json()
+  } catch (error) {
+    console.error('❌ Error en la petición:', error)
+    throw error
+  }
+}
 
 // 🟢 Login de usuario
 export async function login(email, password) {
-  const res = await fetch(`${API_URL}/auth/login`, {
+  return fetchAPI('/auth/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
   })
-  return await res.json()
 }
 
-// 🟣 Registro: permite enviar rol y token opcional para crear admin
+// 🟣 Registro
 export async function register(nombre, email, password, rol = 'cliente', token = null) {
-  const headers = {
-    'Content-Type': 'application/json'
-  }
-  
+  const headers = {}
   if (token) {
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const res = await fetch(`${API_URL}/auth/register`, {
+  return fetchAPI('/auth/register', {
     method: 'POST',
     headers,
     body: JSON.stringify({ nombre, email, password, rol })
   })
-
-  return await res.json()
 }
 
-// 🔵 Obtener lista de servicios (sin autenticación)
+// 🔵 Obtener lista de servicios
 export async function getServicios() {
-  const res = await fetch(`${API_URL}/productos`)
-  return await res.json()
+  return fetchAPI('/servicios')
 }
+

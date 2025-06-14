@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, defineProps } from 'vue'
+import { ref, onMounted, watch, defineProps, computed } from 'vue'
 import { obtenerToken } from '@/utils/auth'
 
 const props = defineProps({ refetch: { type: Number, default: 0 } })
@@ -9,7 +9,16 @@ const cargando    = ref(true)
 const error       = ref('')
 const modoEdicion = ref(null)
 
-/* ---- API ---- */
+// Paginación
+const paginaActual = ref(1)
+const porPagina = 5
+const usuariosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * porPagina
+  return usuarios.value.slice(inicio, inicio + porPagina)
+})
+const totalPaginas = computed(() => Math.ceil(usuarios.value.length / porPagina))
+
+// Obtener usuarios
 const fetchUsers = async () => {
   cargando.value = true
   error.value = ''
@@ -19,18 +28,17 @@ const fetchUsers = async () => {
       error.value = 'No estás autenticado para ver los usuarios.'
       return
     }
-    const response = await fetch('http://localhost:5000/api/admin/usuarios', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/admin/usuarios`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     })
-
-    if (!response.ok) {
-      throw new Error('Error al obtener usuarios')
-    }
-
+    if (!response.ok) throw new Error('Error al obtener usuarios')
     const data = await response.json()
     usuarios.value = data
+    if (paginaActual.value > totalPaginas.value) {
+      paginaActual.value = totalPaginas.value || 1
+    }
   } catch (error) {
     console.error('Error:', error)
     error.value = error.message || 'Error al cargar usuarios'
@@ -47,22 +55,20 @@ const deleteUser = async (id) => {
       error.value = 'No estás autenticado para eliminar usuarios.'
       return
     }
-    const response = await fetch(`http://localhost:5000/api/admin/usuarios/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/admin/usuarios/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
       }
     })
-
     if (!response.ok) {
       const errorData = await response.json()
       throw new Error(errorData.message || 'Error al eliminar usuario')
     }
-
     await fetchUsers()
   } catch (error) {
     console.error('Error al eliminar usuario:', error)
-    // Mostrar el error en la UI si es necesario
+    error.value = error.message || 'Error al eliminar usuario'
   }
 }
 
@@ -73,7 +79,7 @@ const updateUser = async (usuario) => {
       error.value = 'No estás autenticado para actualizar usuarios.'
       return
     }
-    const response = await fetch(`http://localhost:5000/api/admin/usuarios/${usuario._id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/admin/usuarios/${usuario._id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -88,10 +94,10 @@ const updateUser = async (usuario) => {
     }
 
     await fetchUsers()
-    modoEdicion.value = null // Salir del modo edición al guardar con éxito
+    modoEdicion.value = null
   } catch (error) {
     console.error('Error al actualizar usuario:', error)
-    error.value = error.message || 'Error al actualizar usuario' // Mostrar el error en la UI
+    error.value = error.message || 'Error al actualizar usuario'
   }
 }
 
@@ -100,7 +106,7 @@ watch(() => props.refetch, fetchUsers)
 </script>
 
 <template>
-  <p v-if="error"    class="text-red-600 font-semibold mb-4 text-center">{{ error }}</p>
+  <p v-if="error" class="text-red-600 font-semibold mb-4 text-center">{{ error }}</p>
   <p v-if="cargando" class="text-gray-500 italic text-center">Cargando usuarios...</p>
 
   <div class="overflow-x-auto shadow-md rounded-lg">
@@ -115,10 +121,9 @@ watch(() => props.refetch, fetchUsers)
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in usuarios" :key="user._id"
+        <tr v-for="user in usuariosPaginados" :key="user._id"
             class="border-b dark:border-gray-700 hover:bg-violet-50 dark:hover:bg-violet-900 transition">
 
-          <!-- edición -->
           <template v-if="modoEdicion === user._id">
             <td class="p-2">
               <input v-model="user.nombre" class="w-full px-2 py-1 border rounded dark:bg-gray-800" />
@@ -140,7 +145,6 @@ watch(() => props.refetch, fetchUsers)
             </td>
           </template>
 
-          <!-- lectura -->
           <template v-else>
             <td class="p-2">{{ user.nombre }}</td>
             <td class="p-2">{{ user.email }}</td>
@@ -152,7 +156,6 @@ watch(() => props.refetch, fetchUsers)
                       class="text-red-600 hover:text-red-800 font-semibold">Eliminar</button>
             </td>
           </template>
-
         </tr>
       </tbody>
     </table>
@@ -161,5 +164,14 @@ watch(() => props.refetch, fetchUsers)
          class="text-center text-gray-500 dark:text-gray-400 py-12">
       No hay usuarios registrados.
     </div>
+  </div>
+
+  <!-- Controles de paginación -->
+  <div v-if="totalPaginas > 1" class="mt-4 flex justify-center gap-2">
+    <button @click="paginaActual--" :disabled="paginaActual === 1"
+      class="px-3 py-1 rounded bg-violet-600 text-white disabled:opacity-40">Anterior</button>
+    <span class="text-white">{{ paginaActual }} / {{ totalPaginas }}</span>
+    <button @click="paginaActual++" :disabled="paginaActual === totalPaginas"
+      class="px-3 py-1 rounded bg-violet-600 text-white disabled:opacity-40">Siguiente</button>
   </div>
 </template>

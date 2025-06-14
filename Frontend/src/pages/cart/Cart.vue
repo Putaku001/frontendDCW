@@ -1,20 +1,19 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { obtenerUsuario } from '@/utils/auth'
-import BaseButton from '@/components/shared/BaseButton.vue'
 import Header from '@/components/layout/Header.vue'
 import Footer from '@/components/layout/Footer.vue'
 import { cartState, fetchCartData, updateCartItem, removeCartItem } from '@/utils/cartStore'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'
 
 const usuario = ref(null)
-
 const hoveredServiceId = ref(null)
 
 const showTechnologiesHover = (serviceId) => {
   hoveredServiceId.value = serviceId
 }
-
 const hideTechnologiesHover = () => {
   hoveredServiceId.value = null
 }
@@ -26,11 +25,9 @@ const actualizarCantidadEnCarrito = async (servicioId, nuevaCantidad) => {
   }
   await updateCartItem(servicioId, nuevaCantidad)
 }
-
 const quitarDelCarrito = async (servicioId) => {
   await removeCartItem(servicioId)
 }
-
 const confirmarEliminar = (servicioId) => {
   if (confirm('¿Estás seguro de que quieres eliminar este servicio del carrito?')) {
     quitarDelCarrito(servicioId)
@@ -42,14 +39,26 @@ onMounted(() => {
   fetchCartData()
 })
 
-const totalCarrito = computed(() => cartState.total)
+const router = useRouter()
+const irAlCheckout = () => {
+  router.push('/checkout')
+}
 
 const getTechnologyImageUrl = (imagePath) => {
   if (imagePath && !imagePath.startsWith('/uploads/technologies/')) {
-    return `http://localhost:5000/uploads/technologies/${imagePath.substring(imagePath.lastIndexOf('/') + 1)}`;
+    return `${API_BASE_URL}/uploads/technologies/${imagePath.substring(imagePath.lastIndexOf('/') + 1)}`
   }
-  return `http://localhost:5000${imagePath}`;
-};
+  return `${API_BASE_URL}${imagePath}`
+}
+
+const getServiceImageUrl = (imagePath) => {
+  return `${API_BASE_URL}${imagePath}`
+}
+
+// Corrección del cálculo
+const subtotal = computed(() => cartState.total)
+const impuestos = computed(() => +(subtotal.value * 0.13).toFixed(2))
+const totalFinal = computed(() => +(subtotal.value + impuestos.value).toFixed(2))
 </script>
 
 <template>
@@ -88,14 +97,14 @@ const getTechnologyImageUrl = (imagePath) => {
               @mouseover="showTechnologiesHover(item.servicioId._id)" @mouseleave="hideTechnologiesHover()">
               <div class="flex flex-col md:flex-row gap-6">
                 <div class="flex-shrink-0">
-                  <img v-if="item.servicioId.imagen" :src="'http://localhost:5000' + item.servicioId.imagen"
+                  <img v-if="item.servicioId.imagen" :src="getServiceImageUrl(item.servicioId.imagen)"
                     :alt="item.servicioId.nombre" class="w-32 h-32 object-cover rounded-lg border border-gray-200" />
                 </div>
                 <div class="flex-grow">
                   <h3 class="font-bold text-xl text-violet-700 mb-2">{{ item.servicioId.nombre }}</h3>
                   <p class="text-gray-600 mb-4">{{ item.servicioId.descripcion.substring(0, 100) + '...' }}</p>
 
-                  <!-- Modal Hover de Tecnologías -->
+                  <!-- Tecnologías Hover -->
                   <div
                     v-if="hoveredServiceId === item.servicioId._id && item.tecnologiasSeleccionadas && item.tecnologiasSeleccionadas.length"
                     class="absolute top-0 left-0 p-4 bg-white rounded-lg shadow-lg border border-violet-200 z-10 w-64 animate-fade-in-scale transform -translate-x-full origin-top-right">
@@ -112,16 +121,12 @@ const getTechnologyImageUrl = (imagePath) => {
                       <label for="cantidad" class="text-gray-600 font-medium">Cantidad:</label>
                       <div class="flex items-center border rounded-lg overflow-hidden">
                         <button @click="actualizarCantidadEnCarrito(item.servicioId._id, item.cantidad - 1)"
-                          class="px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors">
-                          -
-                        </button>
+                          class="px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors">-</button>
                         <input type="number" v-model.number="item.cantidad"
                           @change="actualizarCantidadEnCarrito(item.servicioId._id, item.cantidad)" min="1"
                           class="w-16 p-2 text-center focus:outline-none" />
                         <button @click="actualizarCantidadEnCarrito(item.servicioId._id, item.cantidad + 1)"
-                          class="px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors">
-                          +
-                        </button>
+                          class="px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors">+</button>
                       </div>
                     </div>
                     <div class="text-right">
@@ -140,7 +145,7 @@ const getTechnologyImageUrl = (imagePath) => {
           </ul>
         </div>
 
-        <!-- Resumen del Pedido -->
+        <!-- Resumen -->
         <div class="lg:col-span-1">
           <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-24">
             <h2 class="text-xl font-bold text-gray-800 mb-6">Resumen del Pedido</h2>
@@ -148,19 +153,20 @@ const getTechnologyImageUrl = (imagePath) => {
             <div class="space-y-4 mb-6">
               <div class="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>$ {{ totalCarrito }}</span>
+                <span>$ {{ subtotal }}</span>
               </div>
               <div class="flex justify-between text-gray-600">
                 <span>Impuestos (13%)</span>
-                <span>$ {{ (totalCarrito * 0.13).toFixed(2) }}</span>
+                <span>$ {{ impuestos }}</span>
               </div>
               <div class="border-t pt-4 flex justify-between text-lg font-bold text-violet-800">
                 <span>Total</span>
-                <span>$ {{ (totalCarrito * 1.19).toFixed(2) }}</span>
+                <span>$ {{ totalFinal }}</span>
               </div>
             </div>
 
             <button
+              @click="irAlCheckout"
               class="w-full bg-violet-600 text-white py-3 rounded-lg hover:bg-violet-700 transition-colors duration-300 font-semibold mb-4">
               Proceder al Pago
             </button>
@@ -180,13 +186,11 @@ const getTechnologyImageUrl = (imagePath) => {
 .animate-fade-in-scale {
   animation: fade-in-scale 0.2s ease-out;
 }
-
 @keyframes fade-in-scale {
   from {
     opacity: 0;
     transform: scale(0.95);
   }
-
   to {
     opacity: 1;
     transform: scale(1);

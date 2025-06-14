@@ -1,12 +1,11 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { obtenerToken } from '@/utils/auth'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'
+
 const props = defineProps({
-  refetch: {
-    type: Number,
-    default: 0
-  }
+  refetch: { type: Number, default: 0 }
 })
 
 const servicios = ref([])
@@ -14,6 +13,7 @@ const cargando = ref(true)
 const error = ref('')
 const modoEdicion = ref(null)
 const imagenPreview = ref(null)
+const mostrarFormulario = ref(false)
 
 const nuevoServicio = ref({
   nombre: '',
@@ -30,22 +30,33 @@ const categorias = [
   { value: 'otros', label: 'Otros' }
 ]
 
-// Cargar servicios
+// Paginación
+const paginaActual = ref(1)
+const porPagina = 5
+
+const serviciosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * porPagina
+  return servicios.value.slice(inicio, inicio + porPagina)
+})
+const totalPaginas = computed(() => Math.ceil(servicios.value.length / porPagina))
+
+// Función para obtener la URL completa de la imagen del servicio
+const getServiceImageUrl = (imagePath) => {
+  return `${API_BASE_URL}${imagePath}`
+}
+
 const fetchServices = async () => {
   try {
     const token = obtenerToken()
-    const response = await fetch('http://localhost:5000/api/servicios', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+    const response = await fetch(`${API_BASE_URL}/api/servicios`, {
+      headers: { 'Authorization': `Bearer ${token}` }
     })
-
-    if (!response.ok) {
-      throw new Error('Error al obtener servicios')
-    }
-
+    if (!response.ok) throw new Error('Error al obtener servicios')
     const data = await response.json()
     servicios.value = data
+    if (paginaActual.value > totalPaginas.value) {
+      paginaActual.value = totalPaginas.value || 1
+    }
     error.value = ''
   } catch (error) {
     console.error('Error:', error)
@@ -55,19 +66,14 @@ const fetchServices = async () => {
   }
 }
 
-// Observar cambios en refetch
-watch(() => props.refetch, () => {
-  fetchServices()
-})
+watch(() => props.refetch, fetchServices)
 
-// Crear servicio
 const createService = async () => {
   try {
     if (!nuevoServicio.value.nombre || !nuevoServicio.value.descripcion || !nuevoServicio.value.costo) {
       error.value = 'Por favor completa todos los campos requeridos'
       return
     }
-
     if (!nuevoServicio.value.imagen) {
       error.value = 'Por favor selecciona una imagen'
       return
@@ -81,38 +87,27 @@ const createService = async () => {
     formData.append('imagen', nuevoServicio.value.imagen)
 
     const token = obtenerToken()
-    if (!token) {
-      error.value = 'No estás autenticado para crear servicios.'
-      return
-    }
-
-    const response = await fetch('http://localhost:5000/api/servicios', {
+    const response = await fetch(`${API_BASE_URL}/api/servicios`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
+      headers: { 'Authorization': `Bearer ${token}` },
       body: formData
     })
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Error al crear servicio')
-    }
+    if (!response.ok) throw new Error('Error al crear servicio')
 
     await fetchServices()
     resetForm()
-    error.value = '' // Limpiar error si la creación es exitosa
+    mostrarFormulario.value = false
   } catch (error) {
     console.error('Error al crear servicio:', error)
     error.value = error.message || 'Error al crear servicio'
   }
 }
 
-// Actualizar servicio
 const updateService = async (servicio) => {
   try {
     if (!servicio.nombre || !servicio.descripcion || !servicio.costo) {
-      error.value = 'Por favor completa todos los campos requeridos para actualizar.'
+      error.value = 'Completa todos los campos para actualizar.'
       return
     }
 
@@ -121,29 +116,18 @@ const updateService = async (servicio) => {
     formData.append('descripcion', servicio.descripcion)
     formData.append('costo', servicio.costo)
     formData.append('categoria', servicio.categoria)
-    // Solo adjuntar la imagen si es un objeto File (es decir, si ha sido cambiada)
     if (servicio.imagen instanceof File) {
       formData.append('imagen', servicio.imagen)
     }
 
     const token = obtenerToken()
-    if (!token) {
-      error.value = 'No estás autenticado para actualizar servicios.'
-      return
-    }
-
-    const response = await fetch(`http://localhost:5000/api/servicios/${servicio._id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/servicios/${servicio._id}`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}` // Añadir el header de autorización
-      },
+      headers: { 'Authorization': `Bearer ${token}` },
       body: formData
     })
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Error al actualizar servicio')
-    }
+    if (!response.ok) throw new Error('Error al actualizar servicio')
 
     await fetchServices()
     modoEdicion.value = null
@@ -154,22 +138,17 @@ const updateService = async (servicio) => {
   }
 }
 
-// Eliminar servicio
 const deleteService = async (id) => {
-  if (!confirm('¿Estás seguro de eliminar este servicio?')) return
+  if (!confirm('¿Eliminar este servicio?')) return
 
   try {
     const token = obtenerToken()
-    const response = await fetch(`http://localhost:5000/api/servicios/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/servicios/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
 
-    if (!response.ok) {
-      throw new Error('Error al eliminar servicio')
-    }
+    if (!response.ok) throw new Error('Error al eliminar servicio')
 
     await fetchServices()
   } catch (error) {
@@ -178,7 +157,6 @@ const deleteService = async (id) => {
   }
 }
 
-// Manejar imagen
 const handleImagen = (event) => {
   const file = event.target.files[0]
   if (file) {
@@ -187,7 +165,6 @@ const handleImagen = (event) => {
   }
 }
 
-// Resetear formulario
 const resetForm = () => {
   nuevoServicio.value = {
     nombre: '',
@@ -204,7 +181,7 @@ onMounted(fetchServices)
 
 <template>
   <div class="space-y-6">
-    <!-- Mensaje de error -->
+    <!-- Errores -->
     <p v-if="error" class="text-red-500 text-center">{{ error }}</p>
 
     <!-- Tabla de servicios -->
@@ -222,67 +199,35 @@ onMounted(fetchServices)
           </tr>
         </thead>
         <tbody>
-          <tr v-for="servicio in servicios" :key="servicio._id"
+          <tr v-for="servicio in serviciosPaginados" :key="servicio._id"
               class="border-b dark:border-gray-700 hover:bg-violet-50 dark:hover:bg-violet-900 transition">
-            
             <!-- Modo edición -->
             <template v-if="modoEdicion === servicio._id">
+              <td class="p-2"><input type="file" @change="handleImagen" class="w-full px-2 py-1 border rounded" /></td>
+              <td class="p-2"><input v-model="servicio.nombre" class="w-full px-2 py-1 border rounded" /></td>
+              <td class="p-2"><textarea v-model="servicio.descripcion" class="w-full px-2 py-1 border rounded" /></td>
+              <td class="p-2"><input v-model="servicio.costo" type="number" class="w-full px-2 py-1 border rounded" /></td>
               <td class="p-2">
-                <input type="file" @change="handleImagen" accept="image/*"
-                       class="w-full px-2 py-1 border rounded dark:bg-gray-800" />
-              </td>
-              <td class="p-2">
-                <input v-model="servicio.nombre" class="w-full px-2 py-1 border rounded dark:bg-gray-800" />
-              </td>
-              <td class="p-2">
-                <textarea v-model="servicio.descripcion"
-                          class="w-full px-2 py-1 border rounded dark:bg-gray-800"></textarea>
-              </td>
-              <td class="p-2">
-                <input v-model="servicio.costo" type="number"
-                       class="w-full px-2 py-1 border rounded dark:bg-gray-800" />
-              </td>
-              <td class="p-2">
-                <select v-model="servicio.categoria"
-                        class="w-full px-2 py-1 border rounded dark:bg-gray-800">
-                  <option v-for="cat in categorias" :key="cat.value" :value="cat.value">
-                    {{ cat.label }}
-                  </option>
+                <select v-model="servicio.categoria" class="w-full px-2 py-1 border rounded">
+                  <option v-for="cat in categorias" :key="cat.value" :value="cat.value">{{ cat.label }}</option>
                 </select>
               </td>
               <td class="p-2 text-center">
-                <button @click="updateService(servicio)"
-                        class="text-green-600 hover:text-green-800 font-semibold mr-2">
-                  Guardar
-                </button>
-                <button @click="modoEdicion = null"
-                        class="text-gray-500 hover:text-gray-700 font-semibold">
-                  Cancelar
-                </button>
+                <button @click="updateService(servicio)" class="text-green-600 font-semibold mr-2">Guardar</button>
+                <button @click="modoEdicion = null" class="text-gray-600 font-semibold">Cancelar</button>
               </td>
             </template>
 
-            <!-- Modo lectura -->
+            <!-- Modo normal -->
             <template v-else>
-              <td class="p-2">
-                <img :src="'http://localhost:5000' + servicio.imagen" :alt="servicio.nombre"
-                     class="w-16 h-16 object-cover rounded" />
-              </td>
+              <td class="p-2"><img :src="getServiceImageUrl(servicio.imagen)" class="w-16 h-16 object-cover rounded" /></td>
               <td class="p-2">{{ servicio.nombre }}</td>
               <td class="p-2">{{ servicio.descripcion }}</td>
               <td class="p-2">${{ servicio.costo }}</td>
-              <td class="p-2 capitalize">
-                {{ categorias.find(c => c.value === servicio.categoria)?.label }}
-              </td>
+              <td class="p-2 capitalize">{{ categorias.find(c => c.value === servicio.categoria)?.label }}</td>
               <td class="p-2 text-center">
-                <button @click="modoEdicion = servicio._id"
-                        class="text-blue-600 hover:text-blue-800 font-semibold mr-2">
-                  Editar
-                </button>
-                <button @click="deleteService(servicio._id)"
-                        class="text-red-600 hover:text-red-800 font-semibold">
-                  Eliminar
-                </button>
+                <button @click="modoEdicion = servicio._id" class="text-blue-600 font-semibold mr-2">Editar</button>
+                <button @click="deleteService(servicio._id)" class="text-red-600 font-semibold">Eliminar</button>
               </td>
             </template>
           </tr>
@@ -295,47 +240,56 @@ onMounted(fetchServices)
       </div>
     </div>
 
-    <!-- Formulario de creación -->
-    <div class="bg-white/90 dark:bg-gray-900 p-6 rounded-lg shadow-xl">
+    <!-- Paginación -->
+    <div v-if="totalPaginas > 1" class="mt-4 flex justify-center gap-2">
+      <button @click="paginaActual--" :disabled="paginaActual === 1"
+        class="px-3 py-1 rounded bg-violet-600 text-white disabled:opacity-40">Anterior</button>
+      <span class="text-white">{{ paginaActual }} / {{ totalPaginas }}</span>
+      <button @click="paginaActual++" :disabled="paginaActual === totalPaginas"
+        class="px-3 py-1 rounded bg-violet-600 text-white disabled:opacity-40">Siguiente</button>
+    </div>
+
+    <!-- Botón "Crear Servicio" -->
+    <div v-if="!mostrarFormulario" class="flex justify-center mt-6">
+      <button @click="mostrarFormulario = true"
+              class="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-6 py-3 rounded-xl shadow">
+        Crear Servicio
+      </button>
+    </div>
+
+    <!-- Formulario -->
+    <div v-else class="bg-white/90 dark:bg-gray-900 p-6 rounded-lg shadow-xl">
       <h3 class="text-2xl font-semibold text-violet-700 dark:text-violet-300 mb-4">
         Crear nuevo servicio
       </h3>
-
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="space-y-4">
-          <input v-model="nuevoServicio.nombre" placeholder="Nombre del servicio"
+          <input v-model="nuevoServicio.nombre" placeholder="Nombre"
                  class="w-full p-2 border rounded focus:ring-2 focus:ring-violet-400 dark:bg-gray-800 dark:text-white" />
-          
           <textarea v-model="nuevoServicio.descripcion" placeholder="Descripción"
                     class="w-full p-2 border rounded focus:ring-2 focus:ring-violet-400 dark:bg-gray-800 dark:text-white"></textarea>
-          
           <input v-model="nuevoServicio.costo" type="number" placeholder="Costo"
                  class="w-full p-2 border rounded focus:ring-2 focus:ring-violet-400 dark:bg-gray-800 dark:text-white" />
-          
           <select v-model="nuevoServicio.categoria"
                   class="w-full p-2 border rounded focus:ring-2 focus:ring-violet-400 dark:bg-gray-800 dark:text-white">
-            <option v-for="cat in categorias" :key="cat.value" :value="cat.value">
-              {{ cat.label }}
-            </option>
+            <option v-for="cat in categorias" :key="cat.value" :value="cat.value">{{ cat.label }}</option>
           </select>
         </div>
-
         <div class="space-y-4">
           <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-            <input type="file" @change="handleImagen" accept="image/*"
-                   class="hidden" id="imagen-input" />
-            <label for="imagen-input"
-                   class="cursor-pointer text-violet-600 hover:text-violet-800">
+            <input type="file" @change="handleImagen" accept="image/*" class="hidden" id="imagen-input" />
+            <label for="imagen-input" class="cursor-pointer text-violet-600 hover:text-violet-800">
               {{ imagenPreview ? 'Cambiar imagen' : 'Seleccionar imagen' }}
             </label>
-            
-            <img v-if="imagenPreview" :src="imagenPreview"
-                 class="mt-2 mx-auto max-h-48 rounded" />
+            <img v-if="imagenPreview" :src="imagenPreview" class="mt-2 mx-auto max-h-48 rounded" />
           </div>
-
-          <button @click="createService()"
+          <button @click="createService"
                   class="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold px-6 py-2 rounded">
             Crear Servicio
+          </button>
+          <button @click="mostrarFormulario = false"
+                  class="w-full bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 text-gray-800 dark:text-gray-200 font-semibold px-6 py-2 rounded">
+            Cancelar
           </button>
         </div>
       </div>

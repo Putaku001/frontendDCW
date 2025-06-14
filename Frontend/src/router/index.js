@@ -10,6 +10,9 @@ import ForgotPassword from '@/pages/ForgotPassword.vue'
 import VerifyResetCode from '@/pages/VerifyResetCode.vue'
 import Cart from '@/pages/cart/Cart.vue'
 import EditarPerfil from '@/pages/EditarPerfil.vue'
+import Orders from '@/pages/Orders.vue'
+import Checkout from '@/pages/checkout/Checkout.vue'
+import Confirmacion from '@/pages/checkout/Confirmacion.vue'
 
 // Páginas protegidas
 import AdminDashboard from '@/pages/AdminDashboard.vue'
@@ -26,8 +29,21 @@ const routes = [
   { path: '/forgotpassword', name: 'ForgotPassword', component: ForgotPassword },
   { path: '/verify-code', name: 'VerifyResetCode', component: VerifyResetCode },
   { path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true } },
+  { path: '/mis-compras', name: 'Orders', component: Orders, meta: { requiresAuth: true } },
   { path: '/admin_dashboard', name: 'AdminDashboard', component: AdminDashboard },
-  { path: '/editar-perfil', name: 'EditarPerfil', component: EditarPerfil, meta: { requiresAuth: true } }
+  { path: '/editar-perfil', name: 'EditarPerfil', component: EditarPerfil, meta: { requiresAuth: true } },
+  {
+    path: '/checkout',
+    name: 'checkout',
+    component: Checkout,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/confirmacion',
+    name: 'confirmacion',
+    component: Confirmacion,
+    meta: { requiresAuth: true }
+  }
 ]
 
 const router = createRouter({

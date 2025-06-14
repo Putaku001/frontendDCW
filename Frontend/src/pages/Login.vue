@@ -34,10 +34,10 @@ const realizarLogin = async () => {
     }
   } catch (err) {
     console.error('[❌] Error:', err)
-    error.value = 'Error al conectar con el servidor.'
+    error.value = err.message || 'Error al conectar con el servidor. Por favor, intente nuevamente.'
+  } finally {
+    cargando.value = false
   }
-
-  cargando.value = false
 }
 </script>
 
@@ -48,8 +48,10 @@ const realizarLogin = async () => {
 
       <form @submit.prevent="realizarLogin" class="space-y-4">
         <input v-model="email" type="email" placeholder="Correo electrónico"
+               autocomplete="email"
                class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500">
         <input v-model="password" type="password" placeholder="Contraseña"
+               autocomplete="current-password"
                class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500">
 
         <p v-if="error" class="text-red-600 text-sm text-center">{{ error }}</p>
