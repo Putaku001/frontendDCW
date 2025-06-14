@@ -70,7 +70,7 @@ const addToCart = async (serviceData) => {
     // Extraer los datos necesarios del objeto serviceData
     const { _id: servicioId, tecnologiasSeleccionadas, precioTotal } = serviceData
 
-    const response = await fetch('https://lab-dcw-back.onrender.com/api/carrito', {
+    const response = await fetch('https://backenddcw-production.up.railway.app/api/carrito', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const fetchServices = async () => {
       error.value = 'No estás autenticado para ver los servicios de la base de datos.'
       return
     }
-    const response = await fetch('https://lab-dcw-back.onrender.com/api/servicios', {
+    const response = await fetch('https://backenddcw-production.up.railway.app/api/servicios', {
       headers: {
         'Authorization': `Bearer ${token}`
       }

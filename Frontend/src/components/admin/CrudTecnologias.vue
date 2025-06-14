@@ -63,8 +63,8 @@ const guardarTecnologia = async () => {
 
     const token = obtenerToken()
     const url = tecnologiaEditando.value
-      ? `https://lab-dcw-back.onrender.com/api/tecnologias/${tecnologiaEditando.value._id}`
-      : 'https://lab-dcw-back.onrender.com/api/tecnologias'
+      ? `https://backenddcw-production.up.railway.app/api/tecnologias/${tecnologiaEditando.value._id}`
+      : 'https://backenddcw-production.up.railway.app/api/tecnologias'
     const method = tecnologiaEditando.value ? 'PUT' : 'POST'
 
     const response = await fetch(url, {
@@ -98,7 +98,7 @@ const eliminarTecnologia = async (id) => {
   if (!confirm('¿Eliminar esta tecnología?')) return
   try {
     const token = obtenerToken()
-    const response = await fetch(`https://lab-dcw-back.onrender.com/api/tecnologias/${id}`, {
+    const response = await fetch(`https://backenddcw-production.up.railway.app/api/tecnologias/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     })

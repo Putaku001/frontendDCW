@@ -44,7 +44,7 @@
 
           <div class="space-y-4">
             <div v-for="item in order.items" :key="item._id" class="flex gap-4 p-4 bg-gray-50 rounded-lg">
-              <img v-if="item.servicio.imagen" :src="'https://tilinazos.netlify.app' + item.servicio.imagen"
+              <img v-if="item.servicio.imagen" :src="'https://lab3dcw.netlify.app' + item.servicio.imagen"
                 :alt="item.servicio.nombre" class="w-20 h-20 object-cover rounded-lg" />
               <div class="flex-grow">
                 <h4 class="font-medium text-gray-800">{{ item.servicio.nombre }}</h4>
@@ -98,25 +98,6 @@ const error = ref(null)
 
 const fetchOrders = async () => {
   try {
-    const response = await fetch('https://tilinazos.netlify.app/api/ordenes', {
+    const response = await fetch('https://backenddcw-production.up.railway.app/api/ordenes', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    if (!response.ok) {
-      throw new Error('Error al obtener las órdenes')
-    }
-    const data = await response.json()
-    orders.value = data
-    loading.value = false
-  } catch (err) {
-    error.value = 'Error al cargar el historial de compras. Por favor, intente nuevamente.'
-    loading.value = false
-    console.error('Error fetching orders:', err)
-  }
-}
-
-onMounted(() => {
-  fetchOrders()
-})
-</script> 

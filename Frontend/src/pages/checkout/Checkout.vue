@@ -56,7 +56,7 @@ const subtotal = computed(() => cartState.total)
 const impuestos = computed(() => +(subtotal.value * 0.13).toFixed(2))
 const total = computed(() => +(subtotal.value + impuestos.value).toFixed(2))
 
-const getImageUrl = (path) => `https://tilinazos.netlify.app/${path}`
+const getImageUrl = (path) => `https://lab3dcw.netlify.app/${path}`
 
 const procesarCompra = async () => {
   if (!validarFechaExpiracion()) {

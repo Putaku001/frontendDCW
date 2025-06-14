@@ -19,7 +19,7 @@ const usuariosPaginados = computed(() => {
 const totalPaginas = computed(() => Math.ceil(usuarios.value.length / porPagina))
 
 // Obtener usuarios
-const fetchUsers = async () => {
+const fetchUsuarios = async () => {
   cargando.value = true
   error.value = ''
   try {
@@ -28,7 +28,7 @@ const fetchUsers = async () => {
       error.value = 'No estás autenticado para ver los usuarios.'
       return
     }
-    const response = await fetch('https://lab-dcw-back.onrender.com/api/admin/usuarios', {
+    const response = await fetch('https://backenddcw-production.up.railway.app/api/admin/usuarios', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -47,7 +47,7 @@ const fetchUsers = async () => {
   }
 }
 
-const deleteUser = async (id) => {
+const eliminarUsuario = async (id) => {
   if (!confirm('¿Eliminar este usuario?')) return
   try {
     const token = obtenerToken()
@@ -55,7 +55,7 @@ const deleteUser = async (id) => {
       error.value = 'No estás autenticado para eliminar usuarios.'
       return
     }
-    const response = await fetch(`https://lab-dcw-back.onrender.com/api/admin/usuarios/${id}`, {
+    const response = await fetch(`https://backenddcw-production.up.railway.app/api/admin/usuarios/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -65,22 +65,26 @@ const deleteUser = async (id) => {
       const errorData = await response.json()
       throw new Error(errorData.message || 'Error al eliminar usuario')
     }
-    await fetchUsers()
+    await fetchUsuarios()
   } catch (error) {
     console.error('Error al eliminar usuario:', error)
     error.value = error.message || 'Error al eliminar usuario'
   }
 }
 
-const updateUser = async (usuario) => {
+const guardarUsuario = async (usuario) => {
   try {
     const token = obtenerToken()
     if (!token) {
       error.value = 'No estás autenticado para actualizar usuarios.'
       return
     }
-    const response = await fetch(`https://lab-dcw-back.onrender.com/api/admin/usuarios/${usuario._id}`, {
-      method: 'PUT',
+    const method = usuario._id ? 'PUT' : 'POST'
+    const url = usuario._id
+      ? `https://backenddcw-production.up.railway.app/api/admin/usuarios/${usuario._id}`
+      : 'https://backenddcw-production.up.railway.app/api/admin/usuarios'
+    const response = await fetch(url, {
+      method: method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -93,7 +97,7 @@ const updateUser = async (usuario) => {
       throw new Error(errorData.message || 'Error al actualizar usuario')
     }
 
-    await fetchUsers()
+    await fetchUsuarios()
     modoEdicion.value = null
   } catch (error) {
     console.error('Error al actualizar usuario:', error)
@@ -101,8 +105,8 @@ const updateUser = async (usuario) => {
   }
 }
 
-onMounted(fetchUsers)
-watch(() => props.refetch, fetchUsers)
+onMounted(fetchUsuarios)
+watch(() => props.refetch, fetchUsuarios)
 </script>
 
 <template>
@@ -138,7 +142,7 @@ watch(() => props.refetch, fetchUsers)
               </select>
             </td>
             <td class="p-2 text-center">
-              <button @click="updateUser(user)"
+              <button @click="guardarUsuario(user)"
                       class="text-green-600 hover:text-green-800 font-semibold mr-2">Guardar</button>
               <button @click="modoEdicion = null"
                       class="text-gray-500 hover:text-gray-700 font-semibold">Cancelar</button>
@@ -152,7 +156,7 @@ watch(() => props.refetch, fetchUsers)
             <td class="p-2 text-center">
               <button @click="modoEdicion = user._id"
                       class="text-blue-600 hover:text-blue-800 font-semibold mr-2">Editar</button>
-              <button @click="deleteUser(user._id)"
+              <button @click="eliminarUsuario(user._id)"
                       class="text-red-600 hover:text-red-800 font-semibold">Eliminar</button>
             </td>
           </template>

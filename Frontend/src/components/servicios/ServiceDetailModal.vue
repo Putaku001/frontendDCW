@@ -145,7 +145,7 @@ const precioTotal = computed(() => {
 const fetchTechnologies = async () => {
   try {
     const token = localStorage.getItem('token')
-    const response = await fetch('https://lab-dcw-back.onrender.com/api/tecnologias', {
+    const response = await fetch('https://backenddcw-production.up.railway.app/api/tecnologias', {
       headers: {
         'Authorization': `Bearer ${token}`
       }

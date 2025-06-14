@@ -50,7 +50,7 @@ const updateCartItem = async (servicioId, cantidad) => {
     if (!token) return
     
     const response = await fetch(
-      `https://lab-dcw-back.onrender.com/api/carrito/${servicioId}`,
+      `https://backenddcw-production.up.railway.app/api/carrito/${servicioId}`,
       {
         method: 'PUT',
         headers: {
@@ -72,7 +72,7 @@ const removeCartItem = async (servicioId) => {
     const token = obtenerToken()
     if (!token) return
     
-    const response = await fetch(`https://lab-dcw-back.onrender.com/api/carrito/${servicioId}`, {
+    const response = await fetch(`https://backenddcw-production.up.railway.app/api/carrito/${servicioId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`

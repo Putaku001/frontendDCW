@@ -44,9 +44,9 @@ const irAlCheckout = () => {
 
 const getTechnologyImageUrl = (imagePath) => {
   if (imagePath && !imagePath.startsWith('/uploads/technologies/')) {
-    return `https://lab-dcw-back.onrender.com/uploads/technologies/${imagePath.substring(imagePath.lastIndexOf('/') + 1)}`
+    return `https://backenddcw-production.up.railway.app/uploads/technologies/${imagePath.substring(imagePath.lastIndexOf('/') + 1)}`
   }
-  return `https://lab-dcw-back.onrender.com/${imagePath}`
+  return `https://backenddcw-production.up.railway.app/${imagePath}`
 }
 
 // Corrección del cálculo
@@ -91,7 +91,7 @@ const totalFinal = computed(() => +(subtotal.value + impuestos.value).toFixed(2)
               @mouseover="showTechnologiesHover(item.servicioId._id)" @mouseleave="hideTechnologiesHover()">
               <div class="flex flex-col md:flex-row gap-6">
                 <div class="flex-shrink-0">
-                  <img v-if="item.servicioId.imagen" :src="'https://tilinazos.netlify.app' + item.servicioId.imagen"
+                  <img v-if="item.servicioId.imagen" :src="'https://lab3dcw.netlify.app' + item.servicioId.imagen"
                     :alt="item.servicioId.nombre" class="w-32 h-32 object-cover rounded-lg border border-gray-200" />
                 </div>
                 <div class="flex-grow">
