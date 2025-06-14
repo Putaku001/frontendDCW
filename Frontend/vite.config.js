@@ -23,10 +23,5 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true
-  },
-  define: {
-    'process.env': {
-      VITE_API_URL: JSON.stringify(process.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api')
-    }
   }
 })

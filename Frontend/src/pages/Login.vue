@@ -34,10 +34,10 @@ const realizarLogin = async () => {
     }
   } catch (err) {
     console.error('[❌] Error:', err)
-    error.value = 'Error al conectar con el servidor.'
+    error.value = err.message || 'Error al conectar con el servidor. Por favor, intente nuevamente.'
+  } finally {
+    cargando.value = false
   }
-
-  cargando.value = false
 }
 </script>
 
