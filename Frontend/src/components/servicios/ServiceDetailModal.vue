@@ -12,7 +12,7 @@
       <div class="flex-1 flex items-center justify-center">
         <img
           v-if="service.imagen"
-          :src="getServiceImageUrl(service.imagen)"
+          :src="'http://localhost:5000' + service.imagen"
           :alt="service.nombre"
           class="max-h-full max-w-full object-contain rounded-lg shadow-lg border border-gray-100" />
       </div>
@@ -56,7 +56,7 @@
                 <div class="flex items-center gap-3">
                   <img
                     v-if="tech.image"
-                    :src="getTechnologyImageUrl(tech.image)"
+                    :src="`http://localhost:5000${tech.image}`"
                     :alt="tech.name"
                     class="h-8 w-8 object-cover rounded-full"
                   />
@@ -95,8 +95,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'
-
 const props = defineProps({
   show: { type: Boolean, default: false },
   service: { type: Object, default: null },
@@ -107,16 +105,6 @@ const emit = defineEmits(['close', 'add-to-cart'])
 const tecnologias = ref([])
 const tecnologiasSeleccionadas = ref([])
 const mostrarTecnologias = ref(false)
-
-// Función para obtener la URL completa de la imagen del servicio
-const getServiceImageUrl = (imagePath) => {
-  return `${API_BASE_URL}${imagePath}`
-}
-
-// Función para obtener la URL completa de la imagen de la tecnología
-const getTechnologyImageUrl = (imagePath) => {
-  return `${API_BASE_URL}${imagePath}`
-}
 
 // Filtrar tecnologías según la categoría del servicio
 const tecnologiasFiltradas = computed(() => {
@@ -157,7 +145,7 @@ const precioTotal = computed(() => {
 const fetchTechnologies = async () => {
   try {
     const token = localStorage.getItem('token')
-    const response = await fetch(`${API_BASE_URL}/api/tecnologias`, {
+    const response = await fetch('https://lab-dcw-back.onrender.com/api/tecnologias', {
       headers: {
         'Authorization': `Bearer ${token}`
       }

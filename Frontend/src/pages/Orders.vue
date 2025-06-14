@@ -44,7 +44,7 @@
 
           <div class="space-y-4">
             <div v-for="item in order.items" :key="item._id" class="flex gap-4 p-4 bg-gray-50 rounded-lg">
-              <img v-if="item.servicio.imagen" :src="getServiceImageUrl(item.servicio.imagen)"
+              <img v-if="item.servicio.imagen" :src="'https://tilinazos.netlify.app' + item.servicio.imagen"
                 :alt="item.servicio.nombre" class="w-20 h-20 object-cover rounded-lg" />
               <div class="flex-grow">
                 <h4 class="font-medium text-gray-800">{{ item.servicio.nombre }}</h4>
@@ -92,19 +92,13 @@ import Header from '../components/layout/Header.vue'
 import Footer from '../components/layout/Footer.vue'
 import { obtenerUsuario } from '@/utils/auth'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'
-
 const orders = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-const getServiceImageUrl = (imagePath) => {
-  return `${API_BASE_URL}${imagePath}`
-}
-
 const fetchOrders = async () => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/ordenes`, {
+    const response = await fetch('https://tilinazos.netlify.app/api/ordenes', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }

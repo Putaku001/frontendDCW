@@ -37,7 +37,7 @@ const resetearContrasena = async () => {
   }
 
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/auth/resetpassword/${token.value}`, {
+    const response = await fetch(`https://lab3dcw.netlify.app/api/auth/resetpassword/${token.value}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

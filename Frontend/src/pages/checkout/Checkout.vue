@@ -5,8 +5,6 @@ import Header from '../../components/layout/Header.vue'
 import Footer from '../../components/layout/Footer.vue'
 import { cartState, fetchCartData } from '../../utils/cartStore'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'
-
 const router = useRouter()
 
 const formData = ref({
@@ -58,7 +56,7 @@ const subtotal = computed(() => cartState.total)
 const impuestos = computed(() => +(subtotal.value * 0.13).toFixed(2))
 const total = computed(() => +(subtotal.value + impuestos.value).toFixed(2))
 
-const getImageUrl = (path) => `${API_BASE_URL}${path}`
+const getImageUrl = (path) => `https://tilinazos.netlify.app/${path}`
 
 const procesarCompra = async () => {
   if (!validarFechaExpiracion()) {
@@ -67,7 +65,7 @@ const procesarCompra = async () => {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/ordenes`, {
+    const response = await fetch('https://lab3dcw.netlify.app/api/ordenes', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

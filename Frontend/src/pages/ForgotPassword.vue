@@ -15,7 +15,7 @@ const solicitarRestablecimiento = async () => {
   error.value = ''
 
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/auth/forgotpassword`, {
+    const response = await fetch('https://lab3dcw.netlify.app/api/auth/forgotpassword', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
