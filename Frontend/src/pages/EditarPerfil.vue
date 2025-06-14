@@ -45,7 +45,7 @@ const guardarCambios = async () => {
       throw new Error('No hay sesión activa')
     }
 
-    const response = await fetch('http://localhost:5000/api/usuarios/update-profile', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/usuarios/update-profile`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

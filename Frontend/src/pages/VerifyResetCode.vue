@@ -38,7 +38,7 @@ const verificarCodigoYRestablecer = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:5000/api/auth/resetpassword', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://backenddcw-production.up.railway.app/api'}/auth/resetpassword`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

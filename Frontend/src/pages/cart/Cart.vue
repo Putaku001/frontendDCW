@@ -43,10 +43,11 @@ const irAlCheckout = () => {
 }
 
 const getTechnologyImageUrl = (imagePath) => {
+  const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'
   if (imagePath && !imagePath.startsWith('/uploads/technologies/')) {
-    return `http://localhost:5000/uploads/technologies/${imagePath.substring(imagePath.lastIndexOf('/') + 1)}`
+    return `${baseUrl}/uploads/technologies/${imagePath.substring(imagePath.lastIndexOf('/') + 1)}`
   }
-  return `http://localhost:5000${imagePath}`
+  return `${baseUrl}${imagePath}`
 }
 
 // Corrección del cálculo
@@ -91,7 +92,7 @@ const totalFinal = computed(() => +(subtotal.value + impuestos.value).toFixed(2)
               @mouseover="showTechnologiesHover(item.servicioId._id)" @mouseleave="hideTechnologiesHover()">
               <div class="flex flex-col md:flex-row gap-6">
                 <div class="flex-shrink-0">
-                  <img v-if="item.servicioId.imagen" :src="'http://localhost:5000' + item.servicioId.imagen"
+                  <img v-if="item.servicioId.imagen" :src="`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'https://backenddcw-production.up.railway.app'}${item.servicioId.imagen}`"
                     :alt="item.servicioId.nombre" class="w-32 h-32 object-cover rounded-lg border border-gray-200" />
                 </div>
                 <div class="flex-grow">
